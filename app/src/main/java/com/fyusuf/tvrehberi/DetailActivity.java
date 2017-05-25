@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -29,10 +30,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class DetailActivity extends AppCompatActivity {
     private RecyclerView recycler_view;
@@ -102,7 +106,7 @@ public class DetailActivity extends AppCompatActivity {
                 int programTime = Integer.parseInt(token[0] + token[1]);
                 Log.i("minute: ", token[0] + token[1]);
                 Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
                 String formatTime = sdf.format(calendar.getTime());
                 String[] token1 = formatTime.split(":");
                 int currentTime = Integer.parseInt(token1[0] + token1[1]);
@@ -154,6 +158,7 @@ public class DetailActivity extends AppCompatActivity {
 
     private class ProgramClass extends AsyncTask<Void, Void, Void> {
         Bitmap bitmapFilmLogo,bitmapFilmImg;
+        String string;
         ArrayList<String> myList = new ArrayList<>();
         @Override
         protected void onPreExecute() {
@@ -170,6 +175,8 @@ public class DetailActivity extends AppCompatActivity {
             try{
                 Document doc  = Jsoup.connect(URL).get();
                 //film parse
+                Element category = doc.select("div[class=title FL]").get(0);
+                string = category.text();
                 Element film = doc.select("div[class=TVProgram FL]").get(0);
                 Elements filmTxt = film.select("div.txt");
                 Elements filmTime = film.select("div.time");
@@ -179,14 +186,17 @@ public class DetailActivity extends AppCompatActivity {
                     myList.add(filmImg.get(i).getElementsByTag("img").attr("src"));
                 }
                 for(int i = 0; i < filmTxt.size(); i++){
-                    InputStream input = new java.net.URL(filmLogo.get(i).getElementsByTag("img").attr("src")).openStream();
-                    if(input != null){
+                    InputStream input;
+                    if(exists(filmLogo.get(i).getElementsByTag("img").attr("src"))){
+                        input = new java.net.URL(filmLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapFilmLogo = BitmapFactory.decodeStream(input);
                     }
-                    input = new java.net.URL(myList.get(i)).openStream();
-                    if( input != null){
+                    else bitmapFilmLogo = BitmapFactory.decodeResource(getResources(), R.drawable.channel);
+                    if(exists(myList.get(i))){
+                        input = new java.net.URL(myList.get(i)).openStream();
                         bitmapFilmImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapFilmImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     program_list.add(new Program(filmTxt.get(i).text(),filmTime.get(i).text(),bitmapFilmImg,bitmapFilmLogo));
                 }
 
@@ -199,11 +209,27 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            setTitle(string);
             DetailRecyclerAdapter adapter_items = new DetailRecyclerAdapter(program_list);
             recycler_view.setHasFixedSize(true);
             recycler_view.setAdapter(adapter_items);
             recycler_view.setItemAnimator(new DefaultItemAnimator());
             progressDialog.dismiss();
+        }
+    }
+
+    public static boolean exists(String URLName){
+        try {
+            HttpURLConnection.setFollowRedirects(false);
+            // note : you may also need
+            //        HttpURLConnection.setInstanceFollowRedirects(false)
+            HttpURLConnection con = (HttpURLConnection) new URL(URLName).openConnection();
+            con.setRequestMethod("HEAD");
+            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
