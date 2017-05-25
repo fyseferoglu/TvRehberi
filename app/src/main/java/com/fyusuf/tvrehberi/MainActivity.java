@@ -164,10 +164,12 @@ public class MainActivity extends AppCompatActivity {
                         input = new java.net.URL(myList.get(i)).openStream();
                         bitmapImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     if(exists(filmLogo.get(i).getElementsByTag("img").attr("src"))) {
                         input = new java.net.URL(filmLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapLogo = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapLogo = BitmapFactory.decodeResource(getResources(),R.drawable.channel);
                     filmList.add(new Program(filmTxt.get(i).text(),filmTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //dizi parse
@@ -189,10 +191,12 @@ public class MainActivity extends AppCompatActivity {
                         input = new java.net.URL(myList.get(i)).openStream();
                         bitmapImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     if(exists(diziLogo.get(i).getElementsByTag("img").attr("src"))) {
                         input = new java.net.URL(diziLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapLogo = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapLogo = BitmapFactory.decodeResource(getResources(),R.drawable.channel);
                     diziList.add(new Program(diziTxt.get(i).text(),diziTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //haber parse
@@ -214,10 +218,12 @@ public class MainActivity extends AppCompatActivity {
                         input = new java.net.URL(myList.get(i)).openStream();
                         bitmapImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     if(exists(haberLogo.get(i).getElementsByTag("img").attr("src"))) {
                         input = new java.net.URL(haberLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapLogo = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapLogo = BitmapFactory.decodeResource(getResources(),R.drawable.channel);
                     haberList.add(new Program(haberTxt.get(i).text(),haberTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //spor parse
@@ -239,10 +245,12 @@ public class MainActivity extends AppCompatActivity {
                         input = new java.net.URL(myList.get(i)).openStream();
                         bitmapImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     if(exists(sporLogo.get(i).getElementsByTag("img").attr("src"))) {
                         input = new java.net.URL(sporLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapLogo = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapLogo = BitmapFactory.decodeResource(getResources(),R.drawable.channel);
                     sporList.add(new Program(sporTxt.get(i).text(),sporTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //eglence parse
@@ -265,10 +273,12 @@ public class MainActivity extends AppCompatActivity {
                         input = new java.net.URL(myList.get(i)).openStream();
                         bitmapImg = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapImg = BitmapFactory.decodeResource(getResources(),R.drawable.program);
                     if(exists(eglLogo.get(i).getElementsByTag("img").attr("src"))){
                         input = new java.net.URL(eglLogo.get(i).getElementsByTag("img").attr("src")).openStream();
                         bitmapLogo = BitmapFactory.decodeStream(input);
                     }
+                    else bitmapLogo = BitmapFactory.decodeResource(getResources(),R.drawable.channel);
                     eglList.add(new Program(eglTxt.get(i).text(),eglTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
             }catch (Exception e){
