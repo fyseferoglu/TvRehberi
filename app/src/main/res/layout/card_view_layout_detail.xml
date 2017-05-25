@@ -20,18 +20,18 @@
             android:orientation="horizontal">
             <ImageView
                 android:id="@+id/programImage"
-                android:layout_width="150px"
-                android:layout_height="100px"
+                android:layout_width="200px"
+                android:layout_height="200px"
                 android:layout_margin="5px"
-                android:layout_gravity="left"
+                android:layout_gravity="center|start"
                 android:scaleType="fitXY"
-                android:src="@drawable/film1"/>
+                android:src="@drawable/program"/>
             <ImageView
                 android:id="@+id/programLogo"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:scaleType="fitXY"
-                android:src="@drawable/logoatv" />
+                android:src="@drawable/channel" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -63,11 +63,12 @@
             </LinearLayout>
             <ImageView
                 android:layout_width="wrap_content"
-                android:layout_gravity="center|end"
                 android:layout_height="wrap_content"
+                android:id="@+id/star_icon"
+                android:contentDescription="star"
+                android:layout_gravity="center|right"
+                android:scaleType="center"
                 android:src="@android:drawable/btn_star_big_off"/>
-
-
 
         </LinearLayout>
  

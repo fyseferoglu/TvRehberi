@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.Ringtone;
@@ -12,6 +13,12 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 public class AlarmReceiver extends BroadcastReceiver {
     public AlarmReceiver() {
@@ -30,6 +37,19 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
         Ringtone ringtone = RingtoneManager.getRingtone(context, alarmUri);
         ringtone.play();*/
+        SharedPreferences sharedPreferences = context.getSharedPreferences("SelectFile", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("program", null);
+        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        ArrayList<String> arrayList = gson.fromJson(json, type);
+        String str = intent.getStringExtra("programTime")+intent.getStringExtra("programName");
+        if(arrayList !=null) {
+            arrayList.remove(str);
+        }
+        json = gson.toJson(arrayList);
+        editor.putString("program", json);
+        editor.apply();
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(android.R.drawable.ic_menu_info_details)
@@ -47,6 +67,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         // Add as notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
+        manager.notify(intent.getStringExtra("programName").hashCode(), builder.build());
     }
 }

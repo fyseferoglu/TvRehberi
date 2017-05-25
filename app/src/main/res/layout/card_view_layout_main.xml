@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/card_view2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        card_view:cardUseCompatPadding="true"
+        card_view:cardCornerRadius="5dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/program_image"
+                android:layout_width="match_parent"
+                android:background="#AA000000"
+                android:layout_height="match_parent"
+                android:layout_margin="5px"
+                android:scaleType="fitXY"
+                android:src="@drawable/program"/>
+            <TextView
+                android:id="@+id/program_time"
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:textColor="#fff600"
+                android:layout_height="wrap_content"
+                android:text="Time"
+                android:layout_above="@+id/program_name"
+                android:background="#AA000000"
+                android:textSize="50px"
+                android:textStyle="bold"
+                />
+            <TextView
+                android:id="@+id/program_name"
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:text="ABCD"
+                android:layout_alignParentBottom="true"
+                android:layout_centerInParent="true"
+                android:background="#AA000000"
+                android:textColor="#ffffffff"
+                android:textSize="40px"
+                android:textStyle="bold"
+                android:layout_marginBottom="5px"
+                />
+
+            <ImageView
+                android:id="@+id/program_logo"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="10px"
+                android:scaleType="fitXY"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/channel" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+</LinearLayout>

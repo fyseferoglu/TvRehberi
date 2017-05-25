@@ -19,6 +19,7 @@ public class Program {
         return this.txt;
     }
 
+
     public Bitmap getImage(){
         return this.image;
     }

@@ -10,11 +10,10 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -23,22 +22,80 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private ImageView film1Img,film2Img,film1Logo,film2Logo;
-    private ImageView dizi1Img,dizi2Img,dizi1Logo,dizi2Logo;
-    private ImageView haber1Img,haber2Img,haber1Logo,haber2Logo;
-    private ImageView spor1Img,spor2Img,spor1Logo,spor2Logo;
-    private ImageView egl1Img,egl2Img,egl1Logo,egl2Logo;
-    private TextView film1Txt,film2Txt,dizi1Txt,dizi2Txt,haber1Txt,haber2Txt,spor1Txt,spor2Txt,egl1Txt,egl2Txt;
+
+    private RecyclerView recyclerFilm;
+    private RecyclerView recyclerDizi;
+    private RecyclerView recyclerHaber;
+    private RecyclerView recyclerSpor;
+    private RecyclerView recyclerEgl;
+    private ArrayList<Program> filmList;
+    private ArrayList<Program> diziList;
+    private ArrayList<Program> haberList;
+    private ArrayList<Program> sporList;
+    private ArrayList<Program> eglList;
     private ProgressDialog progressDialog;
-    private static String URL = "http://www.hurriyet.com.tr/tv-rehberi/";
+    private static String url = "http://www.hurriyet.com.tr/tv-rehberi/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        recyclerFilm = (RecyclerView) findViewById(R.id.recycler_view_film);
+        recyclerDizi = (RecyclerView) findViewById(R.id.recycler_view_dizi);
+        recyclerHaber = (RecyclerView) findViewById(R.id.recycler_view_haber);
+        recyclerSpor = (RecyclerView) findViewById(R.id.recycler_view_spor);
+        recyclerEgl = (RecyclerView) findViewById(R.id.recycler_view_eglence);
+        filmList =  new ArrayList<>();
+        diziList =  new ArrayList<>();
+        haberList =  new ArrayList<>();
+        sporList =  new ArrayList<>();
+        eglList =  new ArrayList<>();
+        GridLayoutManager layoutManager = new GridLayoutManager(this,2);
+        GridLayoutManager layoutManager1 = new GridLayoutManager(this,2);
+        GridLayoutManager layoutManager2 = new GridLayoutManager(this,2);
+        GridLayoutManager layoutManager3 = new GridLayoutManager(this,2);
+        GridLayoutManager layoutManager4 = new GridLayoutManager(this,2);
+
+        layoutManager.scrollToPosition(0);
+        layoutManager1.scrollToPosition(0);
+        layoutManager2.scrollToPosition(0);
+        layoutManager3.scrollToPosition(0);
+        layoutManager4.scrollToPosition(0);
+        recyclerFilm.setLayoutManager(layoutManager);
+        recyclerDizi.setLayoutManager(layoutManager1);
+        recyclerHaber.setLayoutManager(layoutManager2);
+        recyclerSpor.setLayoutManager(layoutManager3);
+        recyclerEgl.setLayoutManager(layoutManager4);
+        MainRecyclerAdapter adapterFilm = new MainRecyclerAdapter(filmList);
+        recyclerFilm.setHasFixedSize(true);
+        recyclerFilm.setAdapter(adapterFilm);
+        recyclerFilm.setItemAnimator(new DefaultItemAnimator());
+
+        MainRecyclerAdapter adapterDizi = new MainRecyclerAdapter(diziList);
+        recyclerDizi.setHasFixedSize(true);
+        recyclerDizi.setAdapter(adapterDizi);
+        recyclerDizi.setItemAnimator(new DefaultItemAnimator());
+
+        MainRecyclerAdapter adapterHaber = new MainRecyclerAdapter(haberList);
+        recyclerHaber.setHasFixedSize(true);
+        recyclerHaber.setAdapter(adapterHaber);
+        recyclerHaber.setItemAnimator(new DefaultItemAnimator());
+
+        MainRecyclerAdapter adapterSpor = new MainRecyclerAdapter(sporList);
+        recyclerSpor.setHasFixedSize(true);
+        recyclerSpor.setAdapter(adapterSpor);
+        recyclerSpor.setItemAnimator(new DefaultItemAnimator());
+
+        MainRecyclerAdapter adapterEgl = new MainRecyclerAdapter(eglList);
+        recyclerEgl.setHasFixedSize(true);
+        recyclerEgl.setAdapter(adapterEgl);
+        recyclerEgl.setItemAnimator(new DefaultItemAnimator());
         if(isOnline())
-            new Program().execute();
+            new ProgramClass().execute();
         else{
             Toast.makeText(getApplicationContext(), "İnternet bağlantısı sağlanamadı!", Toast.LENGTH_SHORT).show();
         }
@@ -71,13 +128,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class Program extends AsyncTask<Void, Void, Void> {
-        String film1,film2,dizi1,dizi2,haber1,haber2,spor1,spor2,egl1,egl2;
-        Bitmap bitmapFilmLogo1,bitmapFilmLogo2,bitmapFilmImg1,bitmapFilmImg2;
-        Bitmap bitmapDiziLogo1,bitmapDiziLogo2,bitmapDiziImg1,bitmapDiziImg2;
-        Bitmap bitmapHaberLogo1,bitmapHaberLogo2,bitmapHaberImg1,bitmapHaberImg2;
-        Bitmap bitmapSporLogo1,bitmapSporLogo2,bitmapSporImg1,bitmapSporImg2;
-        Bitmap bitmapEglLogo1,bitmapEglLogo2,bitmapEglImg1,bitmapEglImg2;
+    private class ProgramClass extends AsyncTask<Void, Void, Void> {
+        Bitmap bitmapLogo,bitmapImg;
+        ArrayList<String> myList = new ArrayList<>();
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -91,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try{
-                Document doc  = Jsoup.connect(URL).get();
+                Document doc  = Jsoup.connect(url).get();
                 //film parse
                 Element film = doc.select("div.TVCategory").get(0);
                 Elements filmTxt = film.select("div.txt");
@@ -99,21 +152,23 @@ public class MainActivity extends AppCompatActivity {
                 Elements filmImg = film.select("div[class=image FL] img[src]");
                 Elements filmLogo = film.select("div[class=Logo] img[src]");
                 InputStream input;
-                if(filmTxt.size() > 0 && filmTime.size() > 0 && filmImg.size() > 0 && filmLogo.size() > 0) {
-                    film1 = filmTime.get(0).text() + "\n" + filmTxt.get(0).text();
-                    film2 = filmTime.get(1).text() + "\n" + filmTxt.get(1).text();
-                    input = new java.net.URL(filmLogo.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapFilmLogo1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(filmLogo.get(1).getElementsByTag("img").attr("src")).openStream();
-                    bitmapFilmLogo2 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(filmImg.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapFilmImg1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(filmImg.get(3).getElementsByTag("img").attr("src")).openStream();
-                    bitmapFilmImg2 = BitmapFactory.decodeStream(input);
+                for(int i = 0; i < filmImg.size(); i+=3){
+                    myList.add(filmImg.get(i).getElementsByTag("img").attr("src"));
                 }
-                else{
-                    film1 = "Film Bulunamadı";
-                    film2 = "Film Bulunamadı";
+
+                int size = filmTxt.size();
+                if(size >= 2)
+                    size = 2;
+                for(int i = 0; i < size; i++){
+                    if(exists(myList.get(i))) {
+                        input = new java.net.URL(myList.get(i)).openStream();
+                        bitmapImg = BitmapFactory.decodeStream(input);
+                    }
+                    if(exists(filmLogo.get(i).getElementsByTag("img").attr("src"))) {
+                        input = new java.net.URL(filmLogo.get(i).getElementsByTag("img").attr("src")).openStream();
+                        bitmapLogo = BitmapFactory.decodeStream(input);
+                    }
+                    filmList.add(new Program(filmTxt.get(i).text(),filmTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //dizi parse
                 Element dizi = doc.select("div.TVCategory").get(1);
@@ -121,21 +176,24 @@ public class MainActivity extends AppCompatActivity {
                 Elements diziTime = dizi.select("div.time");
                 Elements diziImg = dizi.select("div[class=image FL] img[src]");
                 Elements diziLogo = dizi.select("div[class=Logo] img[src]");
-                if(diziTxt.size() > 0 && diziTime.size() > 0 && diziImg.size() > 0 && diziLogo.size() > 0) {
-                    dizi1 = diziTime.get(0).text() + "\n" + diziTxt.get(0).text();
-                    dizi2 = diziTime.get(1).text() + "\n" + diziTxt.get(1).text();
-                    input = new java.net.URL(diziLogo.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapDiziLogo1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(diziLogo.get(1).getElementsByTag("img").attr("src")).openStream();
-                    bitmapDiziLogo2 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(diziImg.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapDiziImg1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(diziImg.get(3).getElementsByTag("img").attr("src")).openStream();
-                    bitmapDiziImg2 = BitmapFactory.decodeStream(input);
+                myList.clear();
+                for(int i = 0; i < diziImg.size(); i+=3){
+                    myList.add(diziImg.get(i).getElementsByTag("img").attr("src"));
                 }
-                else{
-                    dizi1 = "Dizi Bulunamadı";
-                    dizi2 = "Dizi Bulunamadı";
+
+                size = diziTxt.size();
+                if(size >= 2)
+                    size = 2;
+                for(int i = 0; i < size; i++){
+                    if(exists(myList.get(i))) {
+                        input = new java.net.URL(myList.get(i)).openStream();
+                        bitmapImg = BitmapFactory.decodeStream(input);
+                    }
+                    if(exists(diziLogo.get(i).getElementsByTag("img").attr("src"))) {
+                        input = new java.net.URL(diziLogo.get(i).getElementsByTag("img").attr("src")).openStream();
+                        bitmapLogo = BitmapFactory.decodeStream(input);
+                    }
+                    diziList.add(new Program(diziTxt.get(i).text(),diziTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //haber parse
                 Element haber = doc.select("div.TVCategory").get(2);
@@ -143,21 +201,24 @@ public class MainActivity extends AppCompatActivity {
                 Elements haberTime = haber.select("div.time");
                 Elements haberImg = haber.select("div[class=image FL] img[src]");
                 Elements haberLogo = haber.select("div[class=Logo] img[src]");
-                if(haberTxt.size() > 0 && haberTime.size() > 0 && haberImg.size() > 0 && haberLogo.size() > 0) {
-                    haber1 = haberTime.get(0).text() + "\n" + haberTxt.get(0).text();
-                    haber2 = haberTime.get(1).text() + "\n" + haberTxt.get(1).text();
-                    input = new java.net.URL(haberLogo.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapHaberLogo1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(haberLogo.get(1).getElementsByTag("img").attr("src")).openStream();
-                    bitmapHaberLogo2 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(haberImg.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapHaberImg1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(haberImg.get(3).getElementsByTag("img").attr("src")).openStream();
-                    bitmapHaberImg2 = BitmapFactory.decodeStream(input);
+                myList.clear();
+                for(int i = 0; i < haberImg.size(); i+=3){
+                    myList.add(haberImg.get(i).getElementsByTag("img").attr("src"));
                 }
-                else{
-                    haber1 = "Haber Bulunamadı";
-                    haber2 = "Haber Bulunamadı";
+
+                size = haberTxt.size();
+                if(size >= 2)
+                    size = 2;
+                for(int i = 0; i < size; i++){
+                    if(exists(myList.get(i))) {
+                        input = new java.net.URL(myList.get(i)).openStream();
+                        bitmapImg = BitmapFactory.decodeStream(input);
+                    }
+                    if(exists(haberLogo.get(i).getElementsByTag("img").attr("src"))) {
+                        input = new java.net.URL(haberLogo.get(i).getElementsByTag("img").attr("src")).openStream();
+                        bitmapLogo = BitmapFactory.decodeStream(input);
+                    }
+                    haberList.add(new Program(haberTxt.get(i).text(),haberTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //spor parse
                 Element spor = doc.select("div.TVCategory").get(3);
@@ -165,21 +226,24 @@ public class MainActivity extends AppCompatActivity {
                 Elements sporTime = spor.select("div.time");
                 Elements sporImg = spor.select("div[class=image FL] img[src]");
                 Elements sporLogo = spor.select("div[class=Logo] img[src]");
-                if(sporTxt.size() > 0 && sporTime.size() > 0 && sporImg.size() > 0 && sporLogo.size() > 0) {
-                    spor1 = sporTime.get(0).text() + "\n" + sporTxt.get(0).text();
-                    spor2 = sporTime.get(1).text() + "\n" + sporTxt.get(1).text();
-                    input = new java.net.URL(sporLogo.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapSporLogo1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(sporLogo.get(1).getElementsByTag("img").attr("src")).openStream();
-                    bitmapSporLogo2 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(sporImg.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapSporImg1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(sporImg.get(3).getElementsByTag("img").attr("src")).openStream();
-                    bitmapSporImg2 = BitmapFactory.decodeStream(input);
+                myList.clear();
+                for(int i = 0; i < sporImg.size(); i+=3){
+                    myList.add(sporImg.get(i).getElementsByTag("img").attr("src"));
                 }
-                else{
-                    spor1 = "Spor Bulunamadı";
-                    spor2 = "Spor Bulunamadı";
+
+                size = sporTxt.size();
+                if(size >= 2)
+                    size = 2;
+                for(int i = 0; i < size; i++){
+                    if(exists(myList.get(i))) {
+                        input = new java.net.URL(myList.get(i)).openStream();
+                        bitmapImg = BitmapFactory.decodeStream(input);
+                    }
+                    if(exists(sporLogo.get(i).getElementsByTag("img").attr("src"))) {
+                        input = new java.net.URL(sporLogo.get(i).getElementsByTag("img").attr("src")).openStream();
+                        bitmapLogo = BitmapFactory.decodeStream(input);
+                    }
+                    sporList.add(new Program(sporTxt.get(i).text(),sporTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
                 //eglence parse
                 Element egl = doc.select("div.TVCategory").get(4);
@@ -187,21 +251,25 @@ public class MainActivity extends AppCompatActivity {
                 Elements eglTime = egl.select("div.time");
                 Elements eglImg = egl.select("div[class=image FL] img[src]");
                 Elements eglLogo = egl.select("div[class=Logo] img[src]");
-                if(eglTxt.size() > 0 && eglTime.size() > 0 && eglImg.size() > 0 && eglLogo.size() > 0) {
-                    egl1 = eglTime.get(0).text() + "\n" + eglTxt.get(0).text();
-                    egl2 = eglTime.get(1).text() + "\n" + eglTxt.get(1).text();
-                    input = new java.net.URL(eglLogo.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapEglLogo1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(eglLogo.get(1).getElementsByTag("img").attr("src")).openStream();
-                    bitmapEglLogo2 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(eglImg.get(0).getElementsByTag("img").attr("src")).openStream();
-                    bitmapEglImg1 = BitmapFactory.decodeStream(input);
-                    input = new java.net.URL(eglImg.get(3).getElementsByTag("img").attr("src")).openStream();
-                    bitmapEglImg2 = BitmapFactory.decodeStream(input);
+                myList.clear();
+                for(int i = 0; i < eglImg.size(); i+=3){
+                    myList.add(eglImg.get(i).getElementsByTag("img").attr("src"));
                 }
-                else{
-                    egl1 = "Eğlence Bulunamadı";
-                    egl2 = "Eğlence Bulunamadı";
+
+                size = eglTxt.size();
+                if(size >= 2)
+                    size = 2;
+                for(int i = 0; i < size; i++){
+
+                    if(exists(myList.get(i))) {
+                        input = new java.net.URL(myList.get(i)).openStream();
+                        bitmapImg = BitmapFactory.decodeStream(input);
+                    }
+                    if(exists(eglLogo.get(i).getElementsByTag("img").attr("src"))){
+                        input = new java.net.URL(eglLogo.get(i).getElementsByTag("img").attr("src")).openStream();
+                        bitmapLogo = BitmapFactory.decodeStream(input);
+                    }
+                    eglList.add(new Program(eglTxt.get(i).text(),eglTime.get(i).text(),bitmapImg,bitmapLogo));
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -212,77 +280,30 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //film
-            film1Img = (ImageView) findViewById(R.id.film1Image);
-            film2Img = (ImageView) findViewById(R.id.film2Image);
-            film1Logo = (ImageView) findViewById(R.id.film1Logo);
-            film2Logo = (ImageView) findViewById(R.id.film2Logo);
-            film1Txt = (TextView) findViewById(R.id.film1Txt);
-            film2Txt = (TextView) findViewById(R.id.film2Txt);
-            //dizi
-            dizi1Txt = (TextView) findViewById(R.id.dizi1Txt);
-            dizi2Txt = (TextView) findViewById(R.id.dizi2Txt);
-            dizi1Img = (ImageView) findViewById(R.id.dizi1Image);
-            dizi2Img = (ImageView) findViewById(R.id.dizi2Image);
-            dizi1Logo = (ImageView) findViewById(R.id.dizi1Logo);
-            dizi2Logo = (ImageView) findViewById(R.id.dizi2Logo);
-            //haber
-            haber1Img = (ImageView) findViewById(R.id.haber1Image);
-            haber2Img = (ImageView) findViewById(R.id.haber2Image);
-            haber1Logo = (ImageView) findViewById(R.id.haber1Logo);
-            haber2Logo = (ImageView) findViewById(R.id.haber2Logo);
-            haber1Txt = (TextView) findViewById(R.id.haber1Txt);
-            haber2Txt = (TextView) findViewById(R.id.haber2Txt);
-            //spor
-            spor1Img = (ImageView) findViewById(R.id.spor1Image);
-            spor2Img = (ImageView) findViewById(R.id.spor2Image);
-            spor1Logo = (ImageView) findViewById(R.id.spor1Logo);
-            spor2Logo = (ImageView) findViewById(R.id.spor2Logo);
-            spor1Txt = (TextView) findViewById(R.id.spor1Txt);
-            spor2Txt = (TextView) findViewById(R.id.spor2Txt);
-            //eglence
-            egl1Img = (ImageView) findViewById(R.id.egl1Image);
-            egl2Img = (ImageView) findViewById(R.id.egl2Image);
-            egl1Logo = (ImageView) findViewById(R.id.egl1Logo);
-            egl2Logo = (ImageView) findViewById(R.id.egl2Logo);
-            egl1Txt = (TextView) findViewById(R.id.egl1Txt);
-            egl2Txt = (TextView) findViewById(R.id.egl2Txt);
+            MainRecyclerAdapter adapterFilm = new MainRecyclerAdapter(filmList);
+            recyclerFilm.setHasFixedSize(true);
+            recyclerFilm.setAdapter(adapterFilm);
+            recyclerFilm.setItemAnimator(new DefaultItemAnimator());
 
-            //----------------
-            film1Txt.setText(film1);
-            film2Txt.setText(film2);
-            dizi1Txt.setText(dizi1);
-            dizi2Txt.setText(dizi2);
-            haber1Txt.setText(haber1);
-            haber2Txt.setText(haber2);
-            spor1Txt.setText(spor1);
-            spor2Txt.setText(spor2);
-            egl1Txt.setText(egl1);
-            egl2Txt.setText(egl2);
-            if(film1Logo != null)
-                film1Logo.setImageBitmap(bitmapFilmLogo1);
-            if(film2Logo != null)
-                film2Logo.setImageBitmap(bitmapFilmLogo2);
-            if(film1Img != null)
-                film1Img.setImageBitmap(bitmapFilmImg1);
-            if(film2Img != null)
-                film2Img.setImageBitmap(bitmapFilmImg2);
-            dizi1Logo.setImageBitmap(bitmapDiziLogo1);
-            dizi2Logo.setImageBitmap(bitmapDiziLogo2);
-            dizi1Img.setImageBitmap(bitmapDiziImg1);
-            dizi2Img.setImageBitmap(bitmapDiziImg2);
-            haber1Logo.setImageBitmap(bitmapHaberLogo1);
-            haber2Logo.setImageBitmap(bitmapHaberLogo2);
-            haber1Img.setImageBitmap(bitmapHaberImg1);
-            haber2Img.setImageBitmap(bitmapHaberImg2);
-            spor1Logo.setImageBitmap(bitmapSporLogo1);
-            spor2Logo.setImageBitmap(bitmapSporLogo2);
-            spor1Img.setImageBitmap(bitmapSporImg1);
-            spor2Img.setImageBitmap(bitmapSporImg2);
-            egl1Logo.setImageBitmap(bitmapEglLogo1);
-            egl2Logo.setImageBitmap(bitmapEglLogo2);
-            egl1Img.setImageBitmap(bitmapEglImg1);
-            egl2Img.setImageBitmap(bitmapEglImg2);
+            MainRecyclerAdapter adapterDizi = new MainRecyclerAdapter(diziList);
+            recyclerDizi.setHasFixedSize(true);
+            recyclerDizi.setAdapter(adapterDizi);
+            recyclerDizi.setItemAnimator(new DefaultItemAnimator());
+
+            MainRecyclerAdapter adapterHaber = new MainRecyclerAdapter(haberList);
+            recyclerHaber.setHasFixedSize(true);
+            recyclerHaber.setAdapter(adapterHaber);
+            recyclerHaber.setItemAnimator(new DefaultItemAnimator());
+
+            MainRecyclerAdapter adapterSpor = new MainRecyclerAdapter(sporList);
+            recyclerSpor.setHasFixedSize(true);
+            recyclerSpor.setAdapter(adapterSpor);
+            recyclerSpor.setItemAnimator(new DefaultItemAnimator());
+
+            MainRecyclerAdapter adapterEgl = new MainRecyclerAdapter(eglList);
+            recyclerEgl.setHasFixedSize(true);
+            recyclerEgl.setAdapter(adapterEgl);
+            recyclerEgl.setItemAnimator(new DefaultItemAnimator());
             progressDialog.dismiss();
         }
     }
@@ -294,5 +315,19 @@ public class MainActivity extends AppCompatActivity {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
+    public static boolean exists(String URLName){
+        try {
+            HttpURLConnection.setFollowRedirects(false);
+            // note : you may also need
+            //        HttpURLConnection.setInstanceFollowRedirects(false)
+            HttpURLConnection con = (HttpURLConnection) new URL(URLName).openConnection();
+            con.setRequestMethod("HEAD");
+            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
