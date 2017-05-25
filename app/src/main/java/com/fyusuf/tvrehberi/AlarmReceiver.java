@@ -52,6 +52,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                         .setContentText("Program Başladı...");
 
         Intent notificationIntent = new Intent(context, DetailActivity.class);
+        notificationIntent.putExtra("url",intent.getStringExtra("programURL"));
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);

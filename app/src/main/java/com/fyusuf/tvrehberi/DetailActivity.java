@@ -86,6 +86,7 @@ public class DetailActivity extends AppCompatActivity {
                 Program program = program_list.get(position);
                 Intent intent = new Intent(getBaseContext(), AlarmReceiver.class);
                 intent.putExtra("programName", program.getTxt());
+                intent.putExtra("programURL",URL);
                 intent.putExtra("programTime",program.getTime());
                 intent.putExtra("programImg", program.getImage());
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getBaseContext(), program.getTxt().hashCode(), intent, 0);
