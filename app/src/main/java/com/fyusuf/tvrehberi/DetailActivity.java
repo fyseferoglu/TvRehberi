@@ -12,18 +12,14 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
-
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -40,7 +36,7 @@ import java.util.Locale;
 
 public class DetailActivity extends AppCompatActivity {
     private RecyclerView recycler_view;
-    private List<Program> program_list;
+    private List<Program> program_list; //list of program retrieved from url
     private List<String> sp_list; //list of selected program
     private ProgressDialog progressDialog;
     private Gson gson;
@@ -94,17 +90,17 @@ public class DetailActivity extends AppCompatActivity {
                 intent.putExtra("programTime",program.getTime());
                 intent.putExtra("programImg", program.getImage());
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getBaseContext(), program.getTxt().hashCode(), intent, 0);
-                Log.i("hashcode", String.valueOf(program.getTxt().hashCode()));
+                //Log.i("hashcode", String.valueOf(program.getTxt().hashCode()));
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 String time = program.getTime();
-                Log.i("time: ", time);
+                //Log.i("time: ", time);
                 String[] token = time.split(":");
                 int hourOfDay = Integer.valueOf(token[0]);
                 int minute = Integer.valueOf(token[1]);
-                Log.i("hour: ", String.valueOf(hourOfDay));
-                Log.i("minute: ", String.valueOf(minute));
+                //Log.i("hour: ", String.valueOf(hourOfDay));
+                //Log.i("minute: ", String.valueOf(minute));
                 int programTime = Integer.parseInt(token[0] + token[1]);
-                Log.i("minute: ", token[0] + token[1]);
+                //Log.i("minute: ", token[0] + token[1]);
                 Calendar calendar = Calendar.getInstance();
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
                 String formatTime = sdf.format(calendar.getTime());
@@ -113,7 +109,7 @@ public class DetailActivity extends AppCompatActivity {
                 calendar.setTimeInMillis(System.currentTimeMillis());
                 if (programTime > currentTime) {
                     if (starView.getTag().equals("grey")) {
-                        Toast.makeText(getApplicationContext(), program.getTxt() + " seçildi", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), program.getTxt() + " bildirim listesine eklendi.", Toast.LENGTH_SHORT).show();
                         sp_list.add(program.getTime()+program.getTxt());
                         Log.i("size",String.valueOf(sp_list.size()));
                         String json = gson.toJson(sp_list);
@@ -128,7 +124,7 @@ public class DetailActivity extends AppCompatActivity {
                         calendar.set(Calendar.MILLISECOND, 0);
                         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                     } else {
-                        Toast.makeText(getApplicationContext(), program.getTxt() + " silindi", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), program.getTxt() + " bildirim listensinden kaldırıldı.", Toast.LENGTH_SHORT).show();
                         sp_list.remove(program.getTime()+program.getTxt());
                         Log.i("size", String.valueOf(sp_list.size()));
                         String json = gson.toJson(sp_list);
@@ -142,7 +138,7 @@ public class DetailActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Bu program bitti veya devam ediyor.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Bu program bitti veya devam ediyor!", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -153,7 +149,6 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
     }
 
     private class ProgramClass extends AsyncTask<Void, Void, Void> {
@@ -174,7 +169,7 @@ public class DetailActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             try{
                 Document doc  = Jsoup.connect(URL).get();
-                //film parse
+
                 Element category = doc.select("div[class=title FL]").get(0);
                 string = category.text();
                 Element film = doc.select("div[class=TVProgram FL]").get(0);
